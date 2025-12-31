@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TrackMoni — Personal Finance Tracker</title>
+  <meta name="description" content="Simple, private personal finance tracker for everyday Nigerians and beyond." />
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+
+  <!-- Chart.js CDN (only external dependency) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Favicons / PWA (stubs for future) -->
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+</head>
+
+<body>
+  <div class="page">
+    <!-- Header with Navigation -->
+    <header class="header">
+      <div class="container">
+        <nav class="nav">
+          <div class="flex items-center gap-4">
+            <h1 class="font-bold text-xl">TrackMoni</h1>
+          </div>
+          <ul class="nav-list">
+            <li><a href="#/dashboard" class="nav-link active">Dashboard</a></li>
+            <li><a href="#/transactions" class="nav-link">Transactions</a></li>
+            <li><a href="#/categories" class="nav-link">Categories</a></li>
+            <!-- <li><a href="#/settings" class="nav-link">Settings</a></li> -->
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Content Area (pages loaded dynamically) -->
+    <main class="main" id="app-content">
+      <!-- Content will be swapped by app.js based on hash -->
+      <div class="container text-center" style="padding-block: var(--space-8);">
+        <p>Loading your finance tracker...</p>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; 2025 TrackMoni — All data stays on your device.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript Modules (in load order) -->
+  <script src="js/utils.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/ai-insights.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
