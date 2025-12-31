@@ -235,23 +235,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Hamburger menu toggle
+    // Hamburger menu toggle
   if ($mobileToggle && $mobileMenu) {
     $mobileToggle.addEventListener('click', () => {
       $mobileToggle.classList.toggle('active');
       $mobileMenu.classList.toggle('open');
     });
 
-    // Close menu when clicking a mobile link
+    // Handle mobile nav link clicks — manually navigate + close menu
     $mobileNavLinks.forEach(link => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (e) => {
+        // Do NOT preventDefault — we want the hash to change
+        // But close menu immediately
         $mobileToggle.classList.remove('active');
         $mobileMenu.classList.remove('open');
+
+        const href = link.getAttribute('href');
+        if (href && href.startsWith('#/')) {
+          const newView = href.slice(2);
+          if (newView !== State.getState().currentView) {
+            // Force navigation even if same page (rare)
+            location.hash = href;
+          }
+        }
       });
     });
 
-    // Close menu when clicking outside (on backdrop)
-    $mobileMenu.addEventListener('click', e => {
+    // Close on backdrop click
+    $mobileMenu.addEventListener('click', (e) => {
       if (e.target === $mobileMenu) {
         $mobileToggle.classList.remove('active');
         $mobileMenu.classList.remove('open');
