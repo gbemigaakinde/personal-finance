@@ -23,20 +23,42 @@
   <div class="page">
     <!-- Header with Navigation -->
     <header class="header">
-      <div class="container">
-        <nav class="nav">
-          <div class="flex items-center gap-4">
-            <h1 class="font-bold text-xl">TrackMoni</h1>
-          </div>
-          <ul class="nav-list">
-            <li><a href="#/dashboard" class="nav-link active">Dashboard</a></li>
-            <li><a href="#/transactions" class="nav-link">Transactions</a></li>
-            <li><a href="#/categories" class="nav-link">Categories</a></li>
-            <li><a href="#/settings" class="nav-link">Settings</a></li>
-          </ul>
-        </nav>
+  <div class="container">
+    <nav class="nav flex justify-between items-center">
+      <!-- Logo -->
+      <div class="flex items-center gap-4">
+        <h1 class="font-bold text-xl">TrackMoni</h1>
       </div>
-    </header>
+
+      <!-- Desktop Nav (hidden on mobile) -->
+      <ul class="nav-list hidden md:flex">
+        <li><a href="#/dashboard" class="nav-link active">Dashboard</a></li>
+        <li><a href="#/transactions" class="nav-link">Transactions</a></li>
+        <li><a href="#/categories" class="nav-link">Categories</a></li>
+        <li><a href="#/settings" class="nav-link">Settings</a></li>
+      </ul>
+
+      <!-- Hamburger Button (visible on mobile) -->
+      <button id="mobile-menu-toggle" class="md:hidden" aria-label="Open menu">
+        <svg class="hamburger-icon" width="28" height="28" viewBox="0 0 100 100">
+          <rect class="line line-1" width="80" height="10" x="10" y="20" rx="5"></rect>
+          <rect class="line line-2" width="80" height="10" x="10" y="45" rx="5"></rect>
+          <rect class="line line-3" width="80" height="10" x="10" y="70" rx="5"></rect>
+        </svg>
+      </button>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu" class="mobile-menu">
+      <ul class="mobile-nav-list">
+        <li><a href="#/dashboard" class="mobile-nav-link">Dashboard</a></li>
+        <li><a href="#/transactions" class="mobile-nav-link">Transactions</a></li>
+        <li><a href="#/categories" class="mobile-nav-link">Categories</a></li>
+        <li><a href="#/settings" class="mobile-nav-link">Settings</a></li>
+      </ul>
+    </div>
+  </div>
+</header>
 
     <!-- Main Content Area (pages loaded dynamically) -->
     <main class="main" id="app-content">
