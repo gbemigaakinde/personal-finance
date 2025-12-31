@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const $mobileMenu = document.getElementById('mobile-menu');
   const $mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
 
-  // Page templates (loaded as fragments)
+  // Page templates
   const pages = {
     dashboard: null,
     transactions: null,
@@ -22,9 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     settings: null
   };
 
-  /**
-   * Load HTML fragments (only once)
-   */
   async function loadPages() {
     try {
       const [dash, trans, cat, set] = await Promise.all([
@@ -43,96 +40,68 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  /**
-   * Render a page based on hash
-   */
   function renderPage(view = 'dashboard') {
     let content = '';
-    if (view === 'dashboard' && pages.dashboard) {
-      content = pages.dashboard;
-    } else if (view === 'transactions' && pages.transactions) {
-      content = pages.transactions;
-    } else if (view === 'categories' && pages.categories) {
-      content = pages.categories;
-    } else if (view === 'settings' && pages.settings) {
-      content = pages.settings;
-    } else {
-      content = '<p class="text-center">Page not found.</p>';
-    }
+    if (view === 'dashboard' && pages.dashboard) content = pages.dashboard;
+    else if (view === 'transactions' && pages.transactions) content = pages.transactions;
+    else if (view === 'categories' && pages.categories) content = pages.categories;
+    else if (view === 'settings' && pages.settings) content = pages.settings;
+    else content = '<p class="text-center">Page not found.</p>';
 
     $appContent.innerHTML = content;
 
-    // Update active nav links (both desktop and mobile)
-    $navLinks.forEach(link => link.classList.remove('active'));
-    $mobileNavLinks.forEach(link => link.classList.remove('active'));
+    // Update active states
+    $navLinks.forEach(l => l.classList.remove('active'));
+    $mobileNavLinks.forEach(l => l.classList.remove('active'));
+    document.querySelectorAll(`.nav-link[href="#/${view}"], .mobile-nav-link[href="#/${view}"]`)
+      .forEach(l => l.classList.add('active'));
 
-    const desktopActive = document.querySelector(`.nav-link[href="#/${view}"]`);
-    const mobileActive = document.querySelector(`.mobile-nav-link[href="#/${view}"]`);
-
-    if (desktopActive) desktopActive.classList.add('active');
-    if (mobileActive) mobileActive.classList.add('active');
-
-    // Initialize page-specific managers
+    // Page-specific init
     if (view === 'dashboard') {
       updateDashboardSummary();
       ChartsManager.init();
-      const insightsContainer = document.getElementById('insights-container');
-      if (insightsContainer) AIInsights.render(insightsContainer);
-    } else if (view === 'transactions') {
-      TransactionsManager.init();
-    } else if (view === 'categories') {
-      CategoriesManager.init();
-    } else if (view === 'settings') {
-      initSettingsPage();
-    }
+      const insights = document.getElementById('insights-container');
+      if (insights) AIInsights.render(insights);
+    } else if (view === 'transactions') TransactionsManager.init();
+    else if (view === 'categories') CategoriesManager.init();
+    else if (view === 'settings') initSettingsPage();
 
-    // Set default date inputs to today
-    const dateInputs = document.querySelectorAll('input[type="date"]');
-    dateInputs.forEach(input => {
+    // Default dates
+    document.querySelectorAll('input[type="date"]').forEach(input => {
       if (!input.value) input.value = Utils.getTodayISO();
     });
   }
 
-  /**
-   * Update dashboard summary cards
-   */
   function updateDashboardSummary() {
     const transactions = State.getTransactions();
-    let monthIncome = 0;
-    let monthExpenses = 0;
+    let monthIncome = 0, monthExpenses = 0;
     const currentMonth = new Date().toISOString().slice(0, 7);
 
     transactions.forEach(t => {
       if (t.date.startsWith(currentMonth)) {
-        if (t.type === 'income') monthIncome += t.amount;
-        else monthExpenses += t.amount;
+        t.type === 'income' ? monthIncome += t.amount : monthExpenses += t.amount;
       }
     });
 
-    const totalBalance = transactions.reduce((bal, t) =>
-      t.type === 'income' ? bal + t.amount : bal - t.amount, 0
-    );
-
+    const totalBalance = transactions.reduce((bal, t) => t.type === 'income' ? bal + t.amount : bal - t.amount, 0);
     const currency = State.getCurrency();
 
-    const monthIncomeEl = document.getElementById('month-income');
-    const monthExpensesEl = document.getElementById('month-expenses');
-    const balanceEl = document.getElementById('current-balance');
+    const els = {
+      income: document.getElementById('month-income'),
+      expenses: document.getElementById('month-expenses'),
+      balance: document.getElementById('current-balance')
+    };
 
-    if (monthIncomeEl) monthIncomeEl.textContent = Utils.formatCurrency(monthIncome, currency);
-    if (monthExpensesEl) monthExpensesEl.textContent = Utils.formatCurrency(monthExpenses, currency);
-    if (balanceEl) {
-      balanceEl.textContent = Utils.formatCurrency(totalBalance, currency);
-      balanceEl.className = totalBalance >= 0
-        ? 'text-success font-bold text-2xl'
-        : 'text-danger font-bold text-2xl';
+    if (els.income) els.income.textContent = Utils.formatCurrency(monthIncome, currency);
+    if (els.expenses) els.expenses.textContent = Utils.formatCurrency(monthExpenses, currency);
+    if (els.balance) {
+      els.balance.textContent = Utils.formatCurrency(totalBalance, currency);
+      els.balance.className = totalBalance >= 0 ? 'text-success font-bold text-2xl' : 'text-danger font-bold text-2xl';
     }
   }
 
-  /**
-   * Settings page initialization
-   */
   function initSettingsPage() {
+    // ... (same as before, unchanged)
     const $currencySelect = document.getElementById('currency-select');
     const $exportBtn = document.getElementById('export-data');
     const $importBtn = document.getElementById('import-data-btn');
@@ -142,12 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!$currencySelect) return;
 
     $currencySelect.value = State.getCurrency();
-
     $currencySelect.addEventListener('change', () => {
       State.setCurrency($currencySelect.value);
       alert(`Currency updated to ${$currencySelect.value}!`);
     });
 
+    // Export / Import / Clear logic unchanged...
     $exportBtn.addEventListener('click', () => {
       const dataStr = Storage.exportData();
       const blob = new Blob([dataStr], { type: 'application/json' });
@@ -163,27 +132,22 @@ document.addEventListener('DOMContentLoaded', () => {
     $importFile.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = ev => {
         try {
           const data = JSON.parse(ev.target.result);
           if (Storage.importData(data)) {
-            alert('Data imported successfully! Reloading...');
+            alert('Import successful! Reloading...');
             location.reload();
-          } else {
-            alert('Invalid file format.');
-          }
-        } catch (err) {
-          alert('Error reading file.');
-        }
+          } else alert('Invalid file.');
+        } catch { alert('Error reading file.'); }
       };
       reader.readAsText(file);
       $importFile.value = '';
     });
 
     $clearBtn.addEventListener('click', () => {
-      if (confirm('Are you sure? This will permanently delete ALL data.')) {
+      if (confirm('Delete ALL data permanently?')) {
         Storage.clearAll();
         alert('Data cleared. Reloading...');
         location.reload();
@@ -191,27 +155,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /**
-   * Handle hash routing
-   */
   function handleHashChange() {
     let hash = location.hash.slice(2) || 'dashboard';
-    if (!['dashboard', 'transactions', 'categories', 'settings'].includes(hash)) {
-      hash = 'dashboard';
-    }
+    const validViews = ['dashboard', 'transactions', 'categories', 'settings'];
+    if (!validViews.includes(hash)) hash = 'dashboard';
+
     State.setView(hash);
     renderPage(hash);
 
-    // Close mobile menu on navigation
-    if ($mobileToggle?.classList.contains('active')) {
+    // Always close mobile menu on navigation
+    if ($mobileToggle && $mobileMenu) {
       $mobileToggle.classList.remove('active');
-      $mobileMenu?.classList.remove('open');
+      $mobileMenu.classList.remove('open');
     }
   }
 
-  /**
-   * Modal control
-   */
   function handleModal() {
     const { modalOpen } = State.getState();
     if (modalOpen === 'editTransaction' && $modalOverlay) {
@@ -223,46 +181,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === Event Listeners ===
 
-  // Routing
   window.addEventListener('hashchange', handleHashChange);
 
-  // Transaction edit modal
+  // Modal
   if ($closeModalBtn) $closeModalBtn.addEventListener('click', () => State.closeModal());
   if ($cancelEditBtn) $cancelEditBtn.addEventListener('click', () => State.closeModal());
-  if ($modalOverlay) {
-    $modalOverlay.addEventListener('click', e => {
-      if (e.target === $modalOverlay) State.closeModal();
-    });
-  }
+  if ($modalOverlay) $modalOverlay.addEventListener('click', e => { if (e.target === $modalOverlay) State.closeModal(); });
 
-    // Hamburger menu toggle
+  // Hamburger Menu - FIXED VERSION
   if ($mobileToggle && $mobileMenu) {
-    $mobileToggle.addEventListener('click', () => {
+    // Toggle open/close
+    $mobileToggle.addEventListener('click', e => {
+      e.stopPropagation(); // Prevent bubbling to document
       $mobileToggle.classList.toggle('active');
       $mobileMenu.classList.toggle('open');
     });
 
-    // Handle mobile nav link clicks — manually navigate + close menu
+    // Mobile link clicks - MANUAL & RELIABLE
     $mobileNavLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        // Do NOT preventDefault — we want the hash to change
-        // But close menu immediately
-        $mobileToggle.classList.remove('active');
-        $mobileMenu.classList.remove('open');
-
+      link.addEventListener('click', e => {
+        // Do NOT preventDefault - let hash change naturally
         const href = link.getAttribute('href');
         if (href && href.startsWith('#/')) {
-          const newView = href.slice(2);
-          if (newView !== State.getState().currentView) {
-            // Force navigation even if same page (rare)
-            location.hash = href;
-          }
+          // Force hash change (works even if same page)
+          location.hash = href;
+
+          // Close menu immediately
+          $mobileToggle.classList.remove('active');
+          $mobileMenu.classList.remove('open');
         }
       });
     });
 
-    // Close on backdrop click
-    $mobileMenu.addEventListener('click', (e) => {
+    // Backdrop close (only if clicking empty area)
+    $mobileMenu.addEventListener('click', e => {
       if (e.target === $mobileMenu) {
         $mobileToggle.classList.remove('active');
         $mobileMenu.classList.remove('open');
@@ -270,22 +222,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global state updates
+  // Global subscriptions
   State.subscribe(currentState => {
-    if (currentState.currentView === 'dashboard') {
-      updateDashboardSummary();
-    }
+    if (currentState.currentView === 'dashboard') updateDashboardSummary();
     handleModal();
   });
-
-  // Persist data on every state change
   State.subscribe(Storage.persist);
 
-  // === App Initialization ===
+  // Init
   async function initApp() {
     Storage.init();
     await loadPages();
-    handleHashChange(); // Initial render
+    handleHashChange();
   }
 
   initApp();
