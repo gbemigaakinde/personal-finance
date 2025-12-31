@@ -1,6 +1,6 @@
 // app.js
 // Entry point and orchestrator for the entire application.
-// Handles routing, page loading, modal control, global updates, and initialization.
+// Handles routing, page loading, modal control, hamburger menu, global updates, and initialization.
 
 document.addEventListener('DOMContentLoaded', () => {
   const $appContent = document.getElementById('app-content');
@@ -9,12 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const $closeModalBtn = document.getElementById('close-modal');
   const $cancelEditBtn = document.getElementById('cancel-edit');
 
+  // Hamburger menu elements
+  const $mobileToggle = document.getElementById('mobile-menu-toggle');
+  const $mobileMenu = document.getElementById('mobile-menu');
+  const $mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
   // Page templates (loaded as fragments)
   const pages = {
     dashboard: null,
     transactions: null,
     categories: null,
-    settings: null  // Added settings page
+    settings: null
   };
 
   /**
@@ -57,10 +62,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     $appContent.innerHTML = content;
 
-    // Update active nav link
+    // Update active nav links (both desktop and mobile)
     $navLinks.forEach(link => link.classList.remove('active'));
-    const activeLink = document.querySelector(`a[href="#/${view}"]`);
-    if (activeLink) activeLink.classList.add('active');
+    $mobileNavLinks.forEach(link => link.classList.remove('active'));
+
+    const desktopActive = document.querySelector(`.nav-link[href="#/${view}"]`);
+    const mobileActive = document.querySelector(`.mobile-nav-link[href="#/${view}"]`);
+
+    if (desktopActive) desktopActive.classList.add('active');
+    if (mobileActive) mobileActive.classList.add('active');
 
     // Initialize page-specific managers
     if (view === 'dashboard') {
@@ -76,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initSettingsPage();
     }
 
-    // Set default date inputs to today (for transaction forms)
+    // Set default date inputs to today
     const dateInputs = document.querySelectorAll('input[type="date"]');
     dateInputs.forEach(input => {
       if (!input.value) input.value = Utils.getTodayISO();
@@ -84,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Update dashboard summary cards (monthly income, expenses, total balance)
+   * Update dashboard summary cards
    */
   function updateDashboardSummary() {
     const transactions = State.getTransactions();
@@ -120,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Settings page specific initialization
+   * Settings page initialization
    */
   function initSettingsPage() {
     const $currencySelect = document.getElementById('currency-select');
@@ -129,18 +139,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const $importFile = document.getElementById('import-file');
     const $clearBtn = document.getElementById('clear-data');
 
-    if (!$currencySelect) return; // Safety check
+    if (!$currencySelect) return;
 
-    // Set current currency in dropdown
     $currencySelect.value = State.getCurrency();
 
-    // Currency change handler
     $currencySelect.addEventListener('change', () => {
       State.setCurrency($currencySelect.value);
-      alert(`Currency updated to ${$currencySelect.value}! All amounts will now display accordingly.`);
+      alert(`Currency updated to ${$currencySelect.value}!`);
     });
 
-    // Export data
     $exportBtn.addEventListener('click', () => {
       const dataStr = Storage.exportData();
       const blob = new Blob([dataStr], { type: 'application/json' });
@@ -152,7 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
       URL.revokeObjectURL(url);
     });
 
-    // Import data
     $importBtn.addEventListener('click', () => $importFile.click());
     $importFile.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -163,44 +169,48 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const data = JSON.parse(ev.target.result);
           if (Storage.importData(data)) {
-            alert('Data imported successfully! The page will now reload.');
+            alert('Data imported successfully! Reloading...');
             location.reload();
           } else {
-            alert('Invalid or corrupted file format.');
+            alert('Invalid file format.');
           }
         } catch (err) {
-          alert('Error reading file. Please ensure it is a valid JSON backup.');
+          alert('Error reading file.');
         }
       };
       reader.readAsText(file);
-      $importFile.value = ''; // Reset input
+      $importFile.value = '';
     });
 
-    // Clear all data
     $clearBtn.addEventListener('click', () => {
-      if (confirm('Are you sure? This will permanently delete ALL your transactions and reset the app to defaults.')) {
+      if (confirm('Are you sure? This will permanently delete ALL data.')) {
         Storage.clearAll();
-        alert('All data cleared. Reloading...');
+        alert('Data cleared. Reloading...');
         location.reload();
       }
     });
   }
 
   /**
-   * Handle hash changes for routing
+   * Handle hash routing
    */
   function handleHashChange() {
-    let hash = location.hash.slice(2) || 'dashboard'; // remove #/
-    // Normalize view name
+    let hash = location.hash.slice(2) || 'dashboard';
     if (!['dashboard', 'transactions', 'categories', 'settings'].includes(hash)) {
       hash = 'dashboard';
     }
     State.setView(hash);
     renderPage(hash);
+
+    // Close mobile menu on navigation
+    if ($mobileToggle?.classList.contains('active')) {
+      $mobileToggle.classList.remove('active');
+      $mobileMenu?.classList.remove('open');
+    }
   }
 
   /**
-   * Modal control (edit transaction)
+   * Modal control
    */
   function handleModal() {
     const { modalOpen } = State.getState();
@@ -211,9 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Event listeners
+  // === Event Listeners ===
+
+  // Routing
   window.addEventListener('hashchange', handleHashChange);
 
+  // Transaction edit modal
   if ($closeModalBtn) $closeModalBtn.addEventListener('click', () => State.closeModal());
   if ($cancelEditBtn) $cancelEditBtn.addEventListener('click', () => State.closeModal());
   if ($modalOverlay) {
@@ -222,24 +235,46 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global state subscription
+  // Hamburger menu toggle
+  if ($mobileToggle && $mobileMenu) {
+    $mobileToggle.addEventListener('click', () => {
+      $mobileToggle.classList.toggle('active');
+      $mobileMenu.classList.toggle('open');
+    });
+
+    // Close menu when clicking a mobile link
+    $mobileNavLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        $mobileToggle.classList.remove('active');
+        $mobileMenu.classList.remove('open');
+      });
+    });
+
+    // Close menu when clicking outside (on backdrop)
+    $mobileMenu.addEventListener('click', e => {
+      if (e.target === $mobileMenu) {
+        $mobileToggle.classList.remove('active');
+        $mobileMenu.classList.remove('open');
+      }
+    });
+  }
+
+  // Global state updates
   State.subscribe(currentState => {
-    // Update dashboard summary whenever state changes and we're on dashboard
     if (currentState.currentView === 'dashboard') {
       updateDashboardSummary();
     }
-    // Keep modal in sync
     handleModal();
   });
 
-  // Persist state on every change
+  // Persist data on every state change
   State.subscribe(Storage.persist);
 
-  // Initialize app
+  // === App Initialization ===
   async function initApp() {
-    Storage.init();           // Load saved data into State
-    await loadPages();        // Fetch all HTML fragments
-    handleHashChange();       // Render initial page
+    Storage.init();
+    await loadPages();
+    handleHashChange(); // Initial render
   }
 
   initApp();
