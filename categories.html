@@ -1,0 +1,47 @@
+<!-- categories.html -->
+<!-- Page to view and manage categories -->
+
+<div id="categories-page" class="container">
+  <h2 class="mt-4 mb-4">Categories</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Add New Category -->
+    <div class="card">
+      <h3 class="mb-4">Add Custom Category</h3>
+      <form id="add-category-form">
+        <div class="form-group">
+          <label class="label" for="new-category-input">Category Name</label>
+          <input 
+            type="text" 
+            id="new-category-input" 
+            class="input" 
+            placeholder="e.g., Airbnb, School Fees" 
+            maxlength="50" 
+            required 
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Category</button>
+      </form>
+    </div>
+
+    <!-- Current Categories List -->
+    <div class="card">
+      <h3 class="mb-4">All Categories</h3>
+      <ul id="categories-list" class="flex-col">
+        <!-- Filled dynamically by CategoriesManager -->
+      </ul>
+
+      <div class="empty-state">
+        <p>No custom categories added yet.</p>
+        <p class="text-muted small mt-2">
+          Default categories are provided and cannot be removed.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 text-center text-muted small">
+    <p>Default categories include common ones like Salary, Groceries, Transport, etc.</p>
+    <p>Custom categories can be removed only if no transaction uses them.</p>
+  </div>
+</div>
