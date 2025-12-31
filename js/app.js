@@ -188,33 +188,43 @@ document.addEventListener('DOMContentLoaded', () => {
   if ($cancelEditBtn) $cancelEditBtn.addEventListener('click', () => State.closeModal());
   if ($modalOverlay) $modalOverlay.addEventListener('click', e => { if (e.target === $modalOverlay) State.closeModal(); });
 
-  // Hamburger Menu - FIXED VERSION
+  // Hamburger Menu - FINAL WORKING VERSION
   if ($mobileToggle && $mobileMenu) {
-    // Toggle open/close
-    $mobileToggle.addEventListener('click', e => {
-      e.stopPropagation(); // Prevent bubbling to document
+    // Toggle menu open/close
+    $mobileToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       $mobileToggle.classList.toggle('active');
       $mobileMenu.classList.toggle('open');
     });
 
-    // Mobile link clicks - MANUAL & RELIABLE
-    $mobileNavLinks.forEach(link => {
-      link.addEventListener('click', e => {
-        // Do NOT preventDefault - let hash change naturally
-        const href = link.getAttribute('href');
-        if (href && href.startsWith('#/')) {
-          // Force hash change (works even if same page)
-          location.hash = href;
+    // CRITICAL: Manual navigation for mobile links
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault(); // Prevent default only long enough to control flow
 
-          // Close menu immediately
-          $mobileToggle.classList.remove('active');
-          $mobileMenu.classList.remove('open');
-        }
+        const href = link.getAttribute('href');
+        if (!href || !href.startsWith('#/')) return;
+
+        const targetView = href.slice(2);
+
+        // Close menu first
+        $mobileToggle.classList.remove('active');
+        $mobileMenu.classList.remove('open');
+
+        // Small delay to ensure menu close animation completes before navigation
+        setTimeout(() => {
+          if (location.hash.slice(1) !== href) {
+            location.hash = href;
+          } else {
+            // If already on the same page, force re-render
+            handleHashChange();
+          }
+        }, 300); // Matches CSS transition time (var(--transition-normal) = 0.3s)
       });
     });
 
-    // Backdrop close (only if clicking empty area)
-    $mobileMenu.addEventListener('click', e => {
+    // Close on backdrop click
+    $mobileMenu.addEventListener('click', (e) => {
       if (e.target === $mobileMenu) {
         $mobileToggle.classList.remove('active');
         $mobileMenu.classList.remove('open');
