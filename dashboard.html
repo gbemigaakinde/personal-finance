@@ -1,0 +1,63 @@
+<!-- dashboard.html -->
+<!-- Main dashboard view: balance summary, charts, and AI insights -->
+
+<div id="dashboard-page" class="container">
+  <h2 class="mt-4 mb-4">Dashboard</h2>
+
+  <!-- Balance Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" id="dashboard-summary">
+    <!-- Filled dynamically by JavaScript (TransactionsManager.calculateTotals) -->
+    <div class="card text-center">
+      <div class="text-muted small">Total Income (This Month)</div>
+      <div class="text-success font-bold text-2xl" id="month-income">₦0.00</div>
+    </div>
+    <div class="card text-center">
+      <div class="text-muted small">Total Expenses (This Month)</div>
+      <div class="text-danger font-bold text-2xl" id="month-expenses">₦0.00</div>
+    </div>
+    <div class="card text-center">
+      <div class="text-muted small">Current Balance</div>
+      <div class="font-bold text-2xl" id="current-balance">₦0.00</div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Spending Breakdown -->
+    <div class="card">
+      <h3 class="mb-4">Spending Breakdown (This Month)</h3>
+      <div style="height: 300px;">
+        <canvas id="spending-chart"></canvas>
+      </div>
+      <div class="empty-state hidden text-center mt-4">
+        <p>No expenses recorded this month yet.</p>
+      </div>
+    </div>
+
+    <!-- Income vs Expenses Trend -->
+    <div class="card">
+      <h3 class="mb-4">Income vs Expenses (Last 6 Months)</h3>
+      <div style="height: 300px;">
+        <canvas id="trend-chart"></canvas>
+      </div>
+      <div class="empty-state hidden text-center mt-4">
+        <p>Not enough data for trend yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Insights Section -->
+  <div class="card mb-6">
+    <div id="insights-container">
+      <!-- Filled by AIInsights.render() -->
+      <h3>Insights</h3>
+      <p class="text-muted">Add some transactions to see personalized insights.</p>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="flex justify-center gap-4">
+    <a href="#/transactions" class="btn btn-primary">Add Transaction</a>
+    <a href="#/transactions" class="btn btn-outline">View All Transactions</a>
+  </div>
+</div>
